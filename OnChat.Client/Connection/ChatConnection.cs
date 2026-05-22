@@ -34,8 +34,7 @@ public class ChatConnection(IServiceProvider serviceProvider, ILogger<ChatConnec
         _ = Task.Run(Read);
     }
 
-    public async Task<TResponse> Request<TResponse>(IPacket request, CancellationToken cancellationToken = default)
-        where TResponse : IResponse
+    public async Task<IResponse> Request(IPacket request, CancellationToken cancellationToken = default)
     {
         request.CorrelationId = Guid.CreateVersion7();
         
@@ -50,7 +49,7 @@ public class ChatConnection(IServiceProvider serviceProvider, ILogger<ChatConnec
         await using (cts.Token.Register(() => tcs.TrySetException(new TimeoutException($"No response for {request.GetType().Name}"))))
         {
             var responsePacket = await tcs.Task;
-            return (TResponse)responsePacket;
+            return (IResponse)responsePacket;
         }
     }
 

@@ -26,7 +26,7 @@ public class RegistrationAction(ChatConnection connection, ILogger<RegistrationA
         
         RegistrationPacket packet = new(Guid.Empty, login, email, password, age);
         
-        IResponse response = await connection.Request<IResponse>(packet, cancellationToken: cancellationToken);
+        IResponse response = await connection.Request(packet, cancellationToken: cancellationToken);
         
         if(response is RegistrationSuccessfulResponse)
             logger.LogInformation("Account created");

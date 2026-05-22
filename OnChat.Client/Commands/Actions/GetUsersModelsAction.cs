@@ -13,7 +13,7 @@ public class GetUsersModelsAction(ChatConnection connection, UsersProvider users
 {
     public override async Task<int> InvokeAsync(ParseResult parseResult, CancellationToken cancellationToken = default)
     {
-        IResponse response = await connection.Request<IResponse>(new GetUsersModelsPacket(Guid.Empty), cancellationToken);
+        IResponse response = await connection.Request(new GetUsersModelsPacket(Guid.Empty), cancellationToken);
 
         if (response is not ReceiveUsersModelsPacket usersPacket)
         {

@@ -29,7 +29,7 @@ public class GenerateKeysAction(
         
         (byte[] publicKey, byte[] privateKey) keys = ECDHEncryption.GetKeys();
         PublicKeyPacket publicKeyPacket = new (Guid.Empty, token!, keys.publicKey);
-        IResponse publishKeyRequest = await connection.Request<IResponse>(publicKeyPacket, cancellationToken: cancellationToken);
+        IResponse publishKeyRequest = await connection.Request(publicKeyPacket, cancellationToken: cancellationToken);
         
         // ReSharper disable once InvertIf
         if(publishKeyRequest is FailureResponse failureResponse)

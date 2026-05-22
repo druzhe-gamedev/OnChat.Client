@@ -31,7 +31,7 @@ public class ReceiveMessageHandler(ChatConnection connection, UsersProvider user
         Guid senderId = packet.SenderId;
         if (!usersProvider.Users.TryGetValue(senderId, out UserModel? user))
         {
-            IResponse response = await connection.Request<IResponse>(new GetUserModelPacket(Guid.Empty, senderId));
+            IResponse response = await connection.Request(new GetUserModelPacket(Guid.Empty, senderId));
 
             if (response is ReceiveUserModelPacket userModel)
             {

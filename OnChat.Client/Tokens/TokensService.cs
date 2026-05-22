@@ -67,7 +67,7 @@ public class TokensService(ChatConnection connection, ILogger<TokensService> log
             if (!TryGetRefreshToken(out string? token))
                 return;
 
-            IResponse response = await connection.Request<IResponse>(new TokensRotationPacket(Guid.Empty, token!), ct);
+            IResponse response = await connection.Request(new TokensRotationPacket(Guid.Empty, token!), ct);
 
             switch (response)
             {

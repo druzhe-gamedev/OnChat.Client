@@ -29,7 +29,7 @@ public class AuthenticationAction(
         
         AuthenticationPacket packet = new(Guid.Empty, login, password);
         
-        IResponse response = await connection.Request<IResponse>(packet, cancellationToken: cancellationToken);
+        IResponse response = await connection.Request(packet, cancellationToken: cancellationToken);
 
         switch (response)
         {

@@ -46,7 +46,7 @@ public class LoadMessagesAction(
             return 1;
         }
 
-        IResponse response = await connection.Request<IResponse>(
+        IResponse response = await connection.Request(
             new LoadMessagesPacket(Guid.Empty, token!, id, quantity, page),
             cancellationToken
         );
@@ -63,7 +63,7 @@ public class LoadMessagesAction(
                 Guid senderId = encryptedMessage.SenderId;
                 if (!usersProvider.Users.TryGetValue(senderId, out UserModel? user))
                 {
-                    IResponse usersResponse = await connection.Request<IResponse>(
+                    IResponse usersResponse = await connection.Request(
                         new GetUserModelPacket(Guid.Empty, senderId),
                         cancellationToken
                     );

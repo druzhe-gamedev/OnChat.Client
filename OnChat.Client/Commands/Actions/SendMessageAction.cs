@@ -64,7 +64,7 @@ public class SendMessageAction(
         
         SendMessagePacket packet = new(Guid.Empty, token!, userId, encryptedMessage);
         
-        IResponse response = await connection.Request<IResponse>(packet, cancellationToken: cancellationToken);
+        IResponse response = await connection.Request(packet, cancellationToken: cancellationToken);
         
         if(response is WrongIdPacket failure)
             logger.LogError(failure.Description);
