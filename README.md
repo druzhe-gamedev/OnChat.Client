@@ -1,5 +1,5 @@
 # OnChat.Client
-OnChat.Client is a CLI application for communicating with [https://github.com/druzhe-gamedev/OnChat.Server](OnChat.Server).
+OnChat.Client is a CLI application for communicating with [OnChat.Server](https://github.com/druzhe-gamedev/OnChat.Server).
 
 Application uses Microsoft Hosting and DI for project orchestration.
 
@@ -11,7 +11,7 @@ IResponse response = await ChatConnection.Request(packet);
 
 For encryption, AES.GCM with ECDH with keys derivation is used (asymmetric encryption). To communicate with other clients, you must load their public keys first. Only two-participant chat is implemented now.
 
-[https://github.com/druzhe-gamedev/OnChat.Shared](OnChat.Shared) is a common repo for both [https://github.com/druzhe-gamedev/OnChat.Server](OnChat.Server) and client where packets and encryption are present. For now, there's ReceiveMessageHandler, that implements PacketHandler<TPacket> abstract class, that reacts when receiveing message
+[OnChat.Shared](https://github.com/druzhe-gamedev/OnChat.Shared) is a common repo for both [OnChat.Server](https://github.com/druzhe-gamedev/OnChat.Server) and client where packets and encryption are present. For now, there's ReceiveMessageHandler, that implements PacketHandler<TPacket> abstract class, that reacts when receiveing message
 
 System.CommandLine package is used for parsing command line arguments.
 
