@@ -28,7 +28,7 @@ There's 7 commands available for now:
 - msg. Send message to user by his id
   
   Arguments
-  - -r (REQUIRED)  Receiver guid -m (REQUIRED)  Message
+  - -r Receiver guid -m Message
 - users. Load users with their public key's info
 - key-gen. Create key-pair
 - load-msgs. Load messages from chat with some user by his id
