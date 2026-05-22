@@ -1,6 +1,9 @@
 ﻿using System.CommandLine;
-using Client.Commands.Actions;
+using Client.Commands;
 using Client.Connection;
+using Client.Keys;
+using Client.Tokens;
+using Client.User;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Serilog;
@@ -10,16 +13,25 @@ Log.Logger = new LoggerConfiguration().WriteTo.Console(
 ).CreateLogger();
 
 HostApplicationBuilder builder = Host.CreateApplicationBuilder();
+
+builder.Services.AddSerilog();
+builder.Services.AddSingleton<KeysVault>();
 builder.Services.AddSingleton<ChatConnection>();
+builder.Services.AddSingleton<UsersProvider>();
+builder.Services.AddSingleton<TokensService>();
+builder.Services.AddSingleton<CommandsGenerator>();
 
 IHost app = builder.Build();
-await app.StartAsync();
 
-ChatConnection connection = app.Services.GetService<ChatConnection>()!;
+ChatConnection connection = app.Services.GetRequiredService<ChatConnection>();
 await connection.Connect();
 
-Console.WriteLine("OnChat CLI Client v 1.0.0");
+CommandsGenerator commandsGenerator = app.Services.GetRequiredService<CommandsGenerator>();
+await app.Services.GetRequiredService<KeysVault>().FetchKeys();
 
+await app.StartAsync();
+
+Log.Information("OnChat CLI Client v 1.0.0");
 await ReadLoop();
 return;
 
@@ -32,71 +44,8 @@ async Task ReadLoop()
         
         string command = Console.ReadLine()!;
 
-        ParseResult parseResult = GenerateCommands().Parse(command);
+        ParseResult parseResult = commandsGenerator.GenerateCommands().Parse(command);
 
         await parseResult.InvokeAsync();
     }    
-}
-
-RootCommand GenerateCommands()
-{
-    RootCommand rootCommand = 
-        new("OnChat CLI Client v 1.0.0")
-        {
-            Subcommands =
-            {
-                new Command("reg", "Register account")
-                {
-                    Action = new RegistrationAction(connection),
-                    Options =
-                    {
-                        new Option<string>("user")
-                        {
-                            Description = "Username",
-                            Required = true,
-                            Arity = ArgumentArity.ExactlyOne
-                        },
-                        new Option<string>("mail")
-                        {
-                            Description = "E-mail",
-                            Required = true,
-                            Arity = ArgumentArity.ExactlyOne
-                        },
-                        new Option<string>("pwd")
-                        {
-                            Description = "Password",
-                            Required = true,
-                            Arity = ArgumentArity.ExactlyOne
-                        },
-                        new Option<short>("age")
-                        {
-                            Description = "Age",
-                            Required = true,
-                            Arity = ArgumentArity.ExactlyOne
-                        }
-                    }
-                },
-                new Command("log", "Register account")
-                {
-                    Action = new AuthenticationAction(connection),
-                    Options =
-                    {
-                        new Option<string>("login")
-                        {
-                            Description = "Login (username or email)",
-                            Required = true,
-                            Arity = ArgumentArity.ExactlyOne
-                        },
-                        new Option<string>("pwd")
-                        {
-                            Description = "Password",
-                            Required = true,
-                            Arity = ArgumentArity.ExactlyOne
-                        }
-                    }
-                }
-            }
-        };
-
-    return rootCommand;
 }
