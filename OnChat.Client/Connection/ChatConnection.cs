@@ -20,8 +20,11 @@ public class ChatConnection(IServiceProvider serviceProvider, ILogger<ChatConnec
     private readonly ConcurrentDictionary<Guid, TaskCompletionSource<IPacket>> _pendingRequests = new();
     private readonly TimeSpan _defaultTimeout = TimeSpan.FromSeconds(5);
 
+    public AuthenticationState AuthenticationState { get; private set; } = new NotAuthenticated();
+    
     public async Task Connect()
     {
+        _protocol.Setup();
         await _client.ConnectAsync(IPAddress.Loopback, 7596);
 
         _stream = _client.GetStream();
@@ -67,6 +70,15 @@ public class ChatConnection(IServiceProvider serviceProvider, ILogger<ChatConnec
         ms.Seek(0, SeekOrigin.Begin);
         await ms.CopyToAsync(_stream);
     }
+    
+    public void Authenticate(Guid userId, string username)
+    {
+        if (AuthenticationState is not NotAuthenticated)
+            return;
+        
+        logger.LogInformation("Logging in as [{UserId}] {Username}", userId, username);
+        AuthenticationState = new Authenticated(userId, username, this);
+    }
 
     public async Task Read()
     {
@@ -80,7 +92,7 @@ public class ChatConnection(IServiceProvider serviceProvider, ILogger<ChatConnec
 
                 if (!_protocol.Packets.TryGetValue(packetId, out Type? packetType))
                 {
-                    logger.LogInformation($"No packet handler for {packetId}");
+                    logger.LogInformation("No packet handler for {PacketId}", packetId);
                     continue;
                 }
 
@@ -90,14 +102,19 @@ public class ChatConnection(IServiceProvider serviceProvider, ILogger<ChatConnec
                 {
                     if (_pendingRequests.TryRemove(response.CorrelationId, out var cts))
                         cts.SetResult(response);
+                    else
+                    {
+                        if (!_protocol.Handlers.TryGetValue(packet.GetType(), out IPacketHandler? packetHandler))
+                        {
+                            logger.LogInformation("Packet wasn't handled");
+                            return;
+                        }
+                        
+                        await packetHandler.Handle(response, this);
+                    }
                 }
                 else
                     logger.LogError("Packet is malformed");
-                
-                /*if(packet is IPacket sendable)
-                    await _protocol.Handlers[packet.GetType()].Handle(sendable, this);
-                else
-                    logger.LogError("Packet is malformed");*/
             }
         }
         catch (Exception e)
